@@ -5,22 +5,20 @@ resource "google_sql_database_instance" "pgsql" {
   project          = local.project
 
   settings {
-    # Second-generation instance tiers are based on the machine
-    # type. See argument reference below.
     tier = "db-f1-micro"
     ip_configuration {
       psc_config {
         psc_enabled               = true
         allowed_consumer_projects = [local.project]
-        # psc_auto_connections {
-        #   consumer_network            = google_compute_network.example_vpc.id
-        #   consumer_service_project_id = local.project
-        # }
       }
       ipv4_enabled = false
     }
     backup_configuration {
       enabled = false
+    }
+    database_flags {
+      name  = "cloudsql.iam_authentication"
+      value = true
     }
   }
 }
