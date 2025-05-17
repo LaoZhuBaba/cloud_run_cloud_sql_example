@@ -10,5 +10,6 @@ locals {
   vpc_name                = "example-vpc"
   sql_internal_ip         = "10.1.0.250"
   sql_internal_port       = "5432"
+  sql_db_user_name        = "david"
   password_version_number = 2
 }

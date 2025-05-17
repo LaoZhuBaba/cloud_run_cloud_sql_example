@@ -6,14 +6,9 @@ resource "google_cloud_run_v2_service" "example-app" {
   template {
     containers {
       image = "${local.region}-docker.pkg.dev/${local.project}/${local.ar_repo_name}/${local.app_name}"
-      #  env {
-      #     name = "INSTANCE_CONNECTION_NAME"
-      #     //        value = "qoria-sandbox:australia-southeast1:pgsql-instance"
-      #     value = "${local.project}:${local.region}:${local.pg_instance_name}"
-      #   }
       env {
         name  = "DB_USER"
-        value = "david"
+        value = local.sql_db_user_name
       }
       env {
         name = "DB_PASS"
