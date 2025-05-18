@@ -7,18 +7,19 @@ resource "google_cloud_run_v2_service" "example-app" {
     containers {
       image = "${local.region}-docker.pkg.dev/${local.project}/${local.ar_repo_name}/${local.app_name}"
       env {
-        name  = "DB_USER"
-        value = local.sql_db_user_name
+        name = "DB_USER"
+        // value = local.sql_db_user_name
+        value = google_service_account.cloud_run_sa.email
       }
-      env {
-        name = "DB_PASS"
-        value_source {
-          secret_key_ref {
-            secret  = google_secret_manager_secret.db_password_secret.secret_id
-            version = "latest"
-          }
-        }
-      }
+      # env {
+      #   name = "DB_PASS"
+      #   value_source {
+      #     secret_key_ref {
+      #       secret  = google_secret_manager_secret.db_password_secret.secret_id
+      #       version = "latest"
+      #     }
+      #   }
+      # }
       env {
         name  = "DB_NAME"
         value = google_sql_database.example_database.name

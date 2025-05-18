@@ -35,3 +35,10 @@ resource "google_sql_user" "sql_db_user" {
   password_wo         = ephemeral.random_password.db_password.result
   password_wo_version = local.password_version_number
 }
+
+resource "google_sql_user" "sql_db_sa_user" {
+  name     = trimsuffix(google_service_account.cloud_run_sa.email, ".gserviceaccount.com")
+  instance = google_sql_database_instance.pgsql.name
+  type     = "CLOUD_IAM_SERVICE_ACCOUNT"
+}
+

@@ -7,9 +7,11 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
+	"golang.org/x/oauth2/google"
 )
 
 // visitData is used to pass data to the HTML template.
@@ -23,7 +25,21 @@ type visit struct {
 	VisitTime time.Time
 }
 
+func getToken(ctx context.Context) string {
+	scopes := []string{"https://www.googleapis.com/auth/cloud-platform"}
+	creds, err := google.FindDefaultCredentials(ctx, scopes...)
+	if err != nil {
+		log.Fatal(err)
+	}
+	token, err := creds.TokenSource.Token()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return token.AccessToken
+}
+
 func connect(ctx context.Context) (*pgx.Conn, error) {
+
 	mustGetenv := func(k string) string {
 		v := os.Getenv(k)
 		if v == "" {
@@ -33,11 +49,21 @@ func connect(ctx context.Context) (*pgx.Conn, error) {
 	}
 	var (
 		dbUser   = mustGetenv("DB_USER")
-		dbPwd    = mustGetenv("DB_PASS")
 		dbName   = mustGetenv("DB_NAME")
 		dbIPAddr = mustGetenv("DB_IP_ADDRESS")
 		dbIPPort = mustGetenv("DB_IP_PORT")
+		dbPwd    = os.Getenv("DB_PASS") // password is not manditory
 	)
+
+	if dbPwd == "" {
+		dbPwd = getToken(ctx)
+		if dbUserShort, ok := strings.CutSuffix(dbUser, ".gserviceaccount.com"); !ok {
+			log.Fatal("failed to truncate dbUser")
+		} else {
+			log.Printf("dbUser shortened okay: %s -> %s", dbUser, dbUserShort)
+			dbUser = dbUserShort
+		}
+	}
 
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s", dbUser, dbPwd, dbIPAddr, dbIPPort, dbName)
 
@@ -66,7 +92,6 @@ func main() {
 	log.Printf("Listening on port %s", port)
 
 	ctx := context.Background()
-
 	db, err := connect(ctx)
 	if err != nil {
 		log.Fatalf("failed to connect to DB: %v", err)
