@@ -10,4 +10,4 @@ The code can run in two different ways:  If you define the **DB_PASS** environme
 * From experimentation I found that IAM accounts do not automatically have any permissions at Postgresql DB level, so I found I had to run: **grant all privileges on schema public to "<ACCOUNT_NAME>"**; within the database.
 * You must enable a feature flag on the SQL instance: **cloudsql.iam_authentication** in order to use IAM accounts
 
-In the **cloud-run.tf** file you will see I have commented out the code that passes the **DB_PASS** environment variable to Cloud Run, but you could reinstate this code if you want to use a passwoword rather then IAM credentials and an Oauth2 token.
+In the **cloud-run.tf** file you will see I have commented out the code that passes the **DB_PASS** environment variable to Cloud Run, but you could reinstate this code if you want to use a password rather then IAM credentials and an Oauth2 token.
