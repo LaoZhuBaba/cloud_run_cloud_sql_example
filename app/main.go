@@ -26,6 +26,8 @@ type visit struct {
 }
 
 func getToken(ctx context.Context) string {
+	// This scope is a broad generic scope.  It should be possible to restrict this so that
+	// the Oauth2 token only supports required SQL access and nothing else.  To do.
 	scopes := []string{"https://www.googleapis.com/auth/cloud-platform"}
 	creds, err := google.FindDefaultCredentials(ctx, scopes...)
 	if err != nil {
@@ -55,6 +57,10 @@ func connect(ctx context.Context) (*pgx.Conn, error) {
 		dbPwd    = os.Getenv("DB_PASS") // password is not manditory
 	)
 
+	// This is hacky way of making the demo code support both a traditional login/password (for classic Postgresql DB accounts),
+	// and support a Google IAM service account which can log in using an Oauth2 token as a password.  For Postgresql you have to
+	// remove the .gserviceacount.com part of the suffix in order to make this work.  Odd because this isn't required for MS SQL
+	// or MySQL.
 	if dbPwd == "" {
 		dbPwd = getToken(ctx)
 		if dbUserShort, ok := strings.CutSuffix(dbUser, ".gserviceaccount.com"); !ok {
